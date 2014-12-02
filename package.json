@@ -1,0 +1,21 @@
+{
+  "name": "superjs-base",
+  "version": "0.1.0",
+  "description": "Base class to Provide a Simple Inheritance Model to Node.JS",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asleepinglion/superjs-base"
+  },
+  "keywords": [
+    "Base",
+    "Class",
+    "Inheritance"
+  ],
+  "author": "Aaron Storck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/asleepinglion/superjs-base/issues"
+  },
+  "homepage": "https://github.com/asleepinglion/superjs-base"
+}
