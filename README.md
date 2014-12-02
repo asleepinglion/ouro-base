@@ -1,7 +1,7 @@
 # A Simple Inheritance Model
 ##Based on John Resig's Model (http://ejohn.org/blog/simple-javascript-inheritance/)
 
-The `Base` class provides an `extend` method to allow one class to pass its behavior on to another and even call parent methods from within child classes via super methods. Since every class extends from a common base, all classes have the `extend` method, and therefore you can modify or override any part of a `SuperJS` application.
+The `Base` class provides an `extend` method to allow one class to pass its behavior on to another and even call parent methods from within child classes via calls to `_super`. Since every class extends from a common base, all classes have the `extend` method, and therefore you can modify or override any part of a `SuperJS` application.
 
 The syntax for extension is essentially identical to that of Ember.JS. This was done on purpose; partly because its just a clean way of doing it, but also partly because of the preference of using Ember on the client side and further reducing the affects of context-switching. You simply pass in an object containing your methods and variables as the first variable of the extend method.
 
@@ -10,7 +10,7 @@ The syntax for extension is essentially identical to that of Ember.JS. This was 
 ```javascript
 var SuperJS = require('superjs');
 
-var Person = SuperJS.Base.extend({
+var Person = SuperJS.Class.extend({
   init: function() {
 	console.log('I am a person');
   },
