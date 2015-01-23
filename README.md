@@ -68,3 +68,24 @@ ninja.jump();
 ```
 
 This functionality is possible because the base `Class` in SuperJS is itself extended from Node's [EventEmitter class](http://nodejs.org/api/events.html).
+
+**Passing Variables & Objects to the Constructor**
+
+Since the init method acts as the constructor for the class, when you instantiate a new Class, you can pass in any arguments and they will be available as arguments of the init method. For example:
+
+```js
+var Ninja = Female.extend({
+  init: function(name) {
+	this._super();
+	console.log('I am a ninja named: ' + name);
+
+	this.on('jumping', function() {
+	  console.log("I'm jumping like a sexy ninja.");
+	});
+  }
+});
+
+var ninja = new Ninja('Juniper Jones');
+```
+
+Of course you can pass an object instead. In SuperJS we use this feature to pass the a reference the application class instance to controllers or to configure the instantiation of a class. 
