@@ -20,26 +20,25 @@ YSS'      YSSP~YSSY    S*S           YSSP  S*S    SSS  YSSY    YSS'
 
 var EventEmitter = require('events').EventEmitter;
 var Promise = require('bluebird');
+var fs = require('fs');
 
 /**
  * SuperJS Base Class
  *
  * The SuperJS base class is based on John Resig's Simple Inheritance Model
  * (http://ejohn.org/blog/simple-javascript-inheritance/). It provides a convenient
- * mechanism to extend classes without directly working with the prototype chain.
- *
- * In addition, it incorporates SuperJS blueprints for intelligent management of
- * parameter transformations, validation, sanization, and integrated promises.
+ * mechanism to extend classes without directly working with the prototype chain
+ * as well as, integrated support for blueprints, promises, & parameter integrity.
  *
  */
 
 var initializing = false;
 
 //create the actual base class from which all classes derive
-var Class = function(){};
+var BaseClass = function(){};
 
-//create an extended class with the ability to call parent class methods via _super.
-Class.extend = function(prop) {
+//extend the class with ability to call parent/_super methods
+BaseClass.extend = function(prop) {
 
   //maintain a reference to the parent prototype
   var _super = this.prototype;
@@ -65,13 +64,16 @@ Class.extend = function(prop) {
             this._super = _super[name];
           }
 
+          //wrap the method in a promise (resolve/reject become lexically scoped)
           return new Promise(function(resolve, reject) {
 
             this.resolve = resolve;
             this.reject = reject;
 
+            //execute the actual method perseving the scope
             fn.apply(this, arguments)
 
+            //maintain the scope by binding it to the promise
           }).bind(this);
 
         };
@@ -80,17 +82,42 @@ Class.extend = function(prop) {
 
     } else {
 
+      //set the property on the new class' prototype
       prototype[name] = prop[name];
 
     }
   }
 
+  prototype.loadBlueprint = function(path) {
+
+    this.blueprint = require(path + '/blueprint');
+    console.log(this);
+
+  };
+
+
   //create our class constructor
   function Class() {
 
+    console.log('class instantiating...');
+
     //all construction is actually done in the init method
-    if ( !initializing && this.init ) {
-      this.init.apply(this, arguments);
+    if ( !initializing ) {
+
+      console.log('checking for blueprint:',__dirname + '/blueprint.js')
+
+      console.log(this);
+
+      //load blueprint if one exists as a sibling to the current script
+      if( fs.existsSync(__dirname + '/blueprint.js') ) {
+        this.loadBlueprint.apply(this, [__dirname]);
+      }
+
+
+
+      if( typeof this.init === 'function' ) {
+        this.init.apply(this, arguments);
+      }
     }
 
   }
@@ -104,12 +131,13 @@ Class.extend = function(prop) {
   //and make this class extendable
   Class.extend = arguments.callee;
 
+  //return our new super class
   return Class;
 
 };
 
 //add the extend method to node's event emitter
-EventEmitter.extend = Class.extend;
+//EventEmitter.extend = BaseClass.extend;
 
 //export our monkey patched EventEmitter with the new extend method
-module.exports = EventEmitter;
+module.exports = BaseClass;
