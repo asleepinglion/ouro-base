@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/asleepinglion/superjs-base/issues"
   },
-  "homepage": "https://github.com/asleepinglion/superjs-base"
+  "homepage": "https://github.com/asleepinglion/superjs-base",
+  "dependencies": {
+    "bluebird": "^2.9.13"
+  }
 }

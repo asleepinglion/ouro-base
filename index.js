@@ -18,78 +18,98 @@ YSS'      YSSP~YSSY    S*S           YSSP  S*S    SSS  YSSY    YSS'
 
  */
 
+var EventEmitter = require('events').EventEmitter;
+var Promise = require('bluebird');
+
 /**
- * Simple JavaScript Inheritance Inspired by base2 and Prototype.
- * MIT Licensed.
- * Adapted to work as NodeJS module
+ * SuperJS Base Class
  *
- * @link    http://ejohn.org/blog/simple-javascript-inheritance/
- * @author  John Resig
- * @author  Augusto Pascutti
- * @author  Daniel Schwartz
- * @author  Aaron Storck
+ * The SuperJS base class is based on John Resig's Simple Inheritance Model
+ * (http://ejohn.org/blog/simple-javascript-inheritance/). It provides a convenient
+ * mechanism to extend classes without directly working with the prototype chain.
+ *
+ * In addition, it incorporates SuperJS blueprints for intelligent management of
+ * parameter transformations, validation, sanization, and integrated promises.
+ *
  */
 
-var EventEmitter = require('events').EventEmitter;
-
 var initializing = false;
-var fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+
+//create the actual base class from which all classes derive
 var Class = function(){};
 
-// Create a new Class that inherits from this class
+//create an extended class with the ability to call parent class methods via _super.
 Class.extend = function(prop) {
 
+  //maintain a reference to the parent prototype
   var _super = this.prototype;
 
-  // Instantiate a base class (but only create the instance,
-  // don't run the init constructor)
+  //instantiate a base class, but don't run init
   initializing = true;
   var prototype = new this();
   initializing = false;
 
-  // Copy the properties over onto the new prototype
+  //loop through the properties of the new class
   for (var name in prop) {
 
-    // Check if we're overwriting an existing function
-    prototype[name] = typeof prop[name] == "function" &&
-    typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-      (function(name, fn){
-        return function() {
-          var tmp = this._super;
+    //if the new property is a function
+    if (typeof prop[name] === 'function') {
 
-          // Add a new ._super() method that is the same method
-          // but on the super-class
-          this._super = _super[name];
+      //wrap the new function with superjs features using a closure
+      prototype[name] = (function (name, fn) {
 
-          // The method only need to be bound temporarily, so we
-          // remove it when we're done executing
-          var ret = fn.apply(this, arguments);
-          this._super = tmp;
+        return function () {
 
-          return ret;
+          //if we are overloading a parent function, provide access to the _super method
+          if (typeof _super[name] === 'function') {
+            this._super = _super[name];
+          }
+
+          return new Promise(function(resolve, reject) {
+
+            this.resolve = resolve;
+            this.reject = reject;
+
+            fn.apply(this, arguments)
+
+          }).bind(this);
+
         };
-      })(name, prop[name]) :
-      prop[name];
+
+      })(name, prop[name]);
+
+    } else {
+
+      prototype[name] = prop[name];
+
+    }
   }
 
-  // The dummy class constructor
+  //create our class constructor
   function Class() {
-    // All construction is actually done in the init method
-    if ( !initializing && this.init )
+
+    //all construction is actually done in the init method
+    if ( !initializing && this.init ) {
       this.init.apply(this, arguments);
+    }
+
   }
 
-  // Populate our constructed prototype object
+  //populate our constructed prototype object
   Class.prototype = prototype;
-  // Enforce the constructor to be what we expect
+
+  //enforce the constructor to be what we expect
   Class.constructor = Class;
-  // And make this class extendable
+
+  //and make this class extendable
   Class.extend = arguments.callee;
+
   return Class;
+
 };
 
-//Add class extension
+//add the extend method to node's event emitter
 EventEmitter.extend = Class.extend;
 
-//export base class
+//export our monkey patched EventEmitter with the new extend method
 module.exports = EventEmitter;
