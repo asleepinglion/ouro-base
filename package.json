@@ -1,6 +1,6 @@
 {
   "name": "superjs-base",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Base class to Provide a Simple Inheritance Model to Node.JS",
   "main": "index.js",
   "repository": {
