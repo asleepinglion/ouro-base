@@ -16,128 +16,126 @@ YSS'      YSSP~YSSY    S*S           YSSP  S*S    SSS  YSSY    YSS'
                        SP                  SP
                        Y                   Y
 
- */
+                    -= SuperJS Base Class =-
+*/
 
-var EventEmitter = require('events').EventEmitter;
-var Promise = require('bluebird');
-var fs = require('fs');
+module.exports.extend = function() {
 
-/**
- * SuperJS Base Class
- *
- * The SuperJS base class is based on John Resig's Simple Inheritance Model
- * (http://ejohn.org/blog/simple-javascript-inheritance/). It provides a convenient
- * mechanism to extend classes without directly working with the prototype chain
- * as well as, integrated support for blueprints, promises, & parameter integrity.
- *
- */
+  //track the state of baking new classes in the factory
+  var baking = false;
 
-var initializing = false;
+  //create a base class
+  var BaseClass = function() {};
 
-//create the actual base class from which all classes derive
-var BaseClass = function(){};
+  BaseClass.prototype._executeIgnore = ['init', '_execute'];
 
-//extend the class with ability to call parent/_super methods
-BaseClass.extend = function(prop) {
+  //add our extend method
+  BaseClass.extend = function(definition) {
 
-  //maintain a reference to the parent prototype
-  var _super = this.prototype;
+    //maintain a reference to the parent prototype
+    var _super = this.prototype;
 
-  //instantiate a base class, but don't run init
-  initializing = true;
-  var prototype = new this();
-  initializing = false;
+    //instantiate a base class, but don't execute init
+    baking = true;
+    var prototype = new this();
+    baking = false;
 
-  //loop through the properties of the new class
-  for (var name in prop) {
+    //loop through the properties of the new class
+    for (var name in definition) {
 
-    //if the new property is a function
-    if (typeof prop[name] === 'function') {
+      //if the new property is a function
+      if (typeof definition[name] === 'function') {
 
-      //wrap the new function with superjs features using a closure
-      prototype[name] = (function (name, fn) {
+        //wrap all class methods to provide _super and other functionality
+        prototype[name] = (function(name, fn) {
 
-        return function () {
+          return function() {
 
-          //if we are overloading a parent function, provide access to the _super method
-          if (typeof _super[name] === 'function') {
-            this._super = _super[name];
-          }
+            //maintain our scope to the instance
+            var self = this;
 
-          //wrap the method in a promise (resolve/reject become lexically scoped)
-          return new Promise(function(resolve, reject) {
+            //if we are overloading a parent function,
+            //provide access to the _super method
+            if (typeof _super[name] === 'function') {
+              this._super = _super[name];
+            }
 
-            this.resolve = resolve;
-            this.reject = reject;
+            //provide the ability for the extended class to wrap method execution
+            if( typeof this._execute === 'function' && this._executeIgnore.indexOf(name) === -1 ) {
+              return this._execute.call(self,name,fn,arguments);
+            } else {
+              return fn.apply(self, arguments);
+            }
 
-            //execute the actual method perseving the scope
-            fn.apply(this, arguments)
+          };
 
-            //maintain the scope by binding it to the promise
-          }).bind(this);
+        })(name, definition[name]);
 
-        };
+      } else {
 
-      })(name, prop[name]);
+        //set the property on the new class' prototype
+        prototype[name] = definition[name];
 
-    } else {
-
-      //set the property on the new class' prototype
-      prototype[name] = prop[name];
+      }
 
     }
-  }
 
-  prototype.loadBlueprint = function(path) {
+    //create our class constructor
+    function Class() {
 
-    this.blueprint = require(path + '/blueprint');
-    console.log(this);
+      //class construction is actually done in the init method
+      if ( !baking ) {
+
+        //execution the initialization hook if one exists
+        if( typeof this.init === 'function' ) {
+          this.init.apply(this, arguments);
+        }
+      }
+
+    }
+
+    //set our new prototype object
+    Class.prototype = prototype;
+
+    //use our custom class constructor
+    Class.constructor = Class;
+
+    //add the extend method to the new class
+    Class.extend = arguments.callee;
+
+    //return our new super class
+    return Class;
 
   };
 
+  //instantiate variables
+  var i = 0;
+  var definition = {};
+  var mixins = [];
 
-  //create our class constructor
-  function Class() {
+  //transform our input
+  if( arguments.length > 1 ) {
 
-    console.log('class instantiating...');
+    definition = arguments[arguments.length-1];
 
-    //all construction is actually done in the init method
-    if ( !initializing ) {
-
-      console.log('checking for blueprint:',__dirname + '/blueprint.js')
-
-      console.log(this);
-
-      //load blueprint if one exists as a sibling to the current script
-      if( fs.existsSync(__dirname + '/blueprint.js') ) {
-        this.loadBlueprint.apply(this, [__dirname]);
-      }
-
-
-
-      if( typeof this.init === 'function' ) {
-        this.init.apply(this, arguments);
-      }
+    for( i = 0; i < arguments.length-1; i++ ) {
+      mixins.push(arguments[i]);
     }
 
+  } else {
+
+    definition = arguments[0];
   }
 
-  //populate our constructed prototype object
-  Class.prototype = prototype;
+  //set up our new class using the extended definition
+  var NewClass = BaseClass.extend(definition);
 
-  //enforce the constructor to be what we expect
-  Class.constructor = Class;
+  //loop through our mixins and extend
+  for( var i = 0; i < mixins.length; i++ ) {
+    NewClass = NewClass.extend(mixins[i].prototype);
+  }
 
-  //and make this class extendable
-  Class.extend = arguments.callee;
-
-  //return our new super class
-  return Class;
+  //return our new class
+  return NewClass;
 
 };
-
-//add the extend method to node's event emitter
-//EventEmitter.extend = BaseClass.extend;
-
-//export our monkey patched EventEmitter with the new extend method
-module.exports = BaseClass;

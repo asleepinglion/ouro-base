@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/asleepinglion/superjs-base",
   "dependencies": {
-    "bluebird": "^2.9.13"
+    "bluebird": "^2.9.13",
+    "change-case": "^2.2.0",
+    "colors": "^1.0.3",
+    "recursive-merge": "^1.2.0"
   }
 }
