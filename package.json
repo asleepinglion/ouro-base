@@ -1,6 +1,6 @@
 {
   "name": "superjs-base",
-  "version": "0.2.2",
+  "version": "0.8.0",
   "description": "Base class to Provide a Simple Inheritance Model to Node.JS",
   "main": "index.js",
   "repository": {
@@ -19,9 +19,5 @@
   },
   "homepage": "https://github.com/asleepinglion/superjs-base",
   "dependencies": {
-    "bluebird": "^2.9.13",
-    "change-case": "^2.2.0",
-    "colors": "^1.0.3",
-    "recursive-merge": "^1.2.0"
   }
 }
