@@ -54,17 +54,36 @@ module.exports.extend = function() {
             //maintain our scope to the instance
             var self = this;
 
+            //setup return value
+            var returnValue = undefined;
+
             //if we are overloading a parent function,
             //provide access to the _super method
             if (typeof _super[name] === 'function') {
+              var tmp = this._super;
               this._super = _super[name];
             }
 
             //provide the ability for the extended class to wrap method execution
             if( typeof this._execute === 'function' && this._executeIgnore.indexOf(name) === -1 ) {
-              return this._execute.call(self,name,fn,arguments);
+
+              returnValue = this._execute.call(self,name,fn,arguments);
+
+              if (typeof _super[name] === 'function') {
+                this._super = tmp;
+              }
+
+              return returnValue;
+
             } else {
-              return fn.apply(self, arguments);
+
+              returnValue = fn.apply(self, arguments);
+
+              if (typeof _super[name] === 'function') {
+                this._super = tmp;
+              }
+
+              return returnValue;
             }
 
           };
@@ -86,7 +105,7 @@ module.exports.extend = function() {
       //class construction is actually done in the init method
       if ( !baking ) {
 
-        //execution the initialization hook if one exists
+        //execute the initialization hook if one exists
         if( typeof this.init === 'function' ) {
           this.init.apply(this, arguments);
         }
@@ -131,7 +150,7 @@ module.exports.extend = function() {
   var NewClass = BaseClass.extend(definition);
 
   //loop through our mixins and extend
-  for( var i = 0; i < mixins.length; i++ ) {
+  for( i = 0; i < mixins.length; i++ ) {
     NewClass = NewClass.extend(mixins[i].prototype);
   }
 
