@@ -1,11 +1,11 @@
 {
-  "name": "superjs-base",
-  "version": "0.8.1",
+  "name": "ouro-base",
+  "version": "0.9.0",
   "description": "Base class to Provide a Simple Inheritance Model to Node.JS",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/asleepinglion/superjs-base"
+    "url": "https://github.com/asleepinglion/ouro-base"
   },
   "keywords": [
     "Base",
@@ -15,9 +15,9 @@
   "author": "Aaron Storck",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/asleepinglion/superjs-base/issues"
+    "url": "https://github.com/asleepinglion/ouro-base/issues"
   },
-  "homepage": "https://github.com/asleepinglion/superjs-base",
+  "homepage": "https://github.com/asleepinglion/ouro-base",
   "dependencies": {
   }
 }
