@@ -1,9 +1,9 @@
 # A Simple Inheritance Model
 ##Based on John Resig's Model (http://ejohn.org/blog/simple-javascript-inheritance/)
 
-The base `Class` provides an `extend` method to allow one class to pass its behavior on to another and even call parent methods from within child classes via calls to `_super`. Since every class extends from a common base, all classes have the `extend` method, and therefore you can modify or override any part of a `Ouro` application.
+The base `Class` provides an `extend` method to allow one class to pass its behavior on to another and even call parent methods from within child classes via calls to `_super`. Since every class extends from a common base, all classes have the `extend` method, and therefore you can modify or override any part of a `Ouro` application. 
 
-The syntax for extension is essentially identical to that of Ember.JS. This was done on purpose; partly because its just a clean way of doing it, but also partly because of the preference of using Ember on the client side and further reducing the affects of context-switching. You simply pass in an object containing your methods and variables as the first variable of the extend method.
+You simply pass in an object containing your methods and variables as the last argument of the `extend` method. To support Mixins, you can pass any number of other previously defined classes as the first arguments of the `extend` method and they're methods and properties will be mixed in sequentially from left to right with your custom definition merged on top.
 
 **Defining and Extending Classes**
 
